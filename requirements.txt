@@ -1,0 +1,9 @@
+# Runtime dependencies for all five modules.
+# Pinned to the versions the modules were developed and recorded against.
+#
+# Verified from the development environment on 2026-08-22:
+#   Python 3.13.6 (Windows 11)
+opencv-python==4.10.0.84
+numpy==2.5.0
+
+# Standard library only, no install required: math, time

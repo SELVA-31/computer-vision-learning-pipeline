@@ -1,0 +1,62 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---- Virtual environments ----
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# ---- IDE / editor ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.spyproject/
+.ropeproject/
+
+# ---- OS ----
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+
+# ---- Project: raw video is NOT committed ----
+# Source recordings are 60-280 MB each and exceed GitHub's 100 MB file limit.
+# Full recordings are hosted externally and linked from each module README.
+# Only extracted still frames (PNG/JPG) and short compressed clips are tracked.
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+vedios/
+videos/
+
+# Exception: short compressed demo clips under 10 MB, if added deliberately
+!assets/clips/*.mp4
+!**/video/*_clip.mp4
+!**/video/*.gif
+
+# ---- Project: local capture output ----
+captures/
+snapshots/
+*.log
+config.local.ini
+
+# Contact sheets are a local browsing aid (~17 MB), regenerate with tools/extract_frames.py
+assets/sheets/
