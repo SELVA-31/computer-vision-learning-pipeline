@@ -1,6 +1,16 @@
-# Recommended Slider Settings for Each Module
+# Recommended Slider Settings
 
-This guide provides optimal slider ranges and recommended settings for your Arducam IMX298 (B0290) camera with red LED detection.
+Starting points for each module, from tuning sessions with an Arducam IMX298
+(B0290) on a breadboard LED target.
+
+**These are starting points, not correct answers.** They were found under one
+camera, one lens, one lighting setup. Treat them as a place to begin.
+
+**Known constraint:** with `Red Mode` ON in module 2, the H Lower and H Upper
+sliders are bypassed - the hue bands are hardcoded to `[0,10]` and `[170,179]`.
+Hue values in the module 2 tables below apply only with Red Mode OFF. See
+[module 2](../module-02-hsv-segmentation/) for why this is documented rather
+than patched.
 
 ---
 
@@ -84,19 +94,10 @@ V Lower: 80     V Upper: 255
 | Problem | Solution |
 |---------|----------|
 | Background noise in mask | Increase S Lower (try 150-200) |
-| LED not fully white in mask | Increase H Upper / Decrease H Lower |
+| LED not fully white in mask | Lower S Lower and V Lower. With Red Mode ON the H sliders have no effect |
 | LED too dim to detect | Decrease V Lower (try 50-80) |
 | White objects also detected | Increase S Lower (needs color, not white) |
 | LED appears white in camera | Decrease V Upper (reduce overexposure) |
-
-### Visualization Toggles
-| Toggle | Recommended | Purpose |
-|--------|-------------|---------|
-| Show HSV | ON | Verify color conversion |
-| Show Mask | ON | Main tuning reference |
-| Show Result | ON | Verify isolated LED |
-| Show Channels | OFF (toggle as needed) | Debug individual H/S/V |
-| Show Color Wheel | OFF (toggle as needed) | Understand hue selection |
 
 ---
 
@@ -128,15 +129,6 @@ V Lower: 80     V Upper: 255
 4. **Check Cleaned**: If holes in LED → increase Dilate
 5. **If LED disappears** → decrease all values
 
-### Visualization Toggles
-| Toggle | Recommended | Purpose |
-|--------|-------------|---------|
-| Show Blur | OFF | Debug only |
-| Show Erode | OFF | Debug only |
-| Show Dilate | OFF | Debug only |
-| **Show Compare** | **ON** | **Main 2x2 comparison view** |
-| Show Diff | OFF (toggle as needed) | See what each step removes/adds |
-
 ---
 
 ## Module 4: Pattern Detection & Shape Analysis
@@ -147,7 +139,6 @@ V Lower: 80     V Upper: 255
 | **Min Area** | 0-2000 | 100-300 | Minimum contour area (pixels²) |
 | **Circularity** | 0-100 (0.00-1.00) | 60-75 (0.60-0.75) | Shape roundness threshold |
 | **Hough DP** | 1-30 (0.1-3.0) | 12 (1.2) | Accumulator resolution inverse |
-| **Hough Param1** | 0-300 | 100 | Canny edge threshold |
 | **Hough Param2** | 0-100 | 20-30 | Circle center accumulator threshold |
 | **Min Radius** | 0-100 | 5-10 | Minimum circle radius |
 | **Max Radius** | 0-200 | 50-100 | Maximum circle radius |
@@ -179,15 +170,6 @@ V Lower: 80     V Upper: 255
 | Circles too large/small | Adjust Min/Max Radius |
 | Circles offset from actual | Lower DP (try 1.0) |
 | Performance slow | Raise DP (try 2.0) |
-
-### Visualization Toggles
-| Toggle | Recommended | Purpose |
-|--------|-------------|---------|
-| **Show Contours** | **ON** | **Main contour detection** |
-| **Show Hough** | **ON** | **Circle-specific detection** |
-| Show Shape Info | ON | Detailed metrics per contour |
-| **Show Compare** | **ON** | **4-panel comparison view** |
-| Show Only Valid | OFF | Toggle to see rejected contours |
 
 ---
 
@@ -227,14 +209,6 @@ V Lower: 80     V Upper: 255
 | Robot tracks background light | Increase Min Area, increase Circularity |
 | Robot loses LED when moving | Decrease Stability Frames |
 | False positives from reflections | Increase Circularity to 70+ |
-
-### Visualization Toggles
-| Toggle | Recommended | Purpose |
-|--------|-------------|---------|
-| **Show Overlay** | **ON** | **Main tracking display** |
-| **Show Graph** | **ON** | **Distance indicator** |
-| **Show History** | **ON** | **Position tracking** |
-| **Show Dashboard** | **ON** | **Complete metrics** |
 
 ---
 

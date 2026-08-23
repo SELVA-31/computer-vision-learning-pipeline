@@ -159,7 +159,7 @@ manual test misses.
 
 ## Limitations
 
-- `exposure` and `gain` are read **once before the loop** (lines 192–193). The
+- `exposure` and `gain` are read **once before the loop** (lines 196–197). The
   `Gain: 0.00` readout is a startup snapshot, not live. Exposure stays correct
   only because the `+`/`-` handlers update the local variable.
 - FPS is instantaneous and unsmoothed, so the figure jitters frame to frame.

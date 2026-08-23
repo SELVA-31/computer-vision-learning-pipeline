@@ -131,6 +131,7 @@ assets/      contact sheets
 | Script | Purpose |
 |---|---|
 | `tools/verify_modules.py` | Camera-free checks over the processing functions |
+| `tools/check_repo.py` | Audits the docs against the code: control tables, cited line numbers, image links, file sizes, dependencies |
 | `tools/extract_frames.py` | Contact sheets and full-resolution stills from a recording |
 | `tools/make_clip.py` | Cut a short, repo-sized clip (finds ffmpeg, or uses `imageio-ffmpeg`) |
 
