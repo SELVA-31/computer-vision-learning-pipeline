@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" width="900" height="360" role="img" aria-label="Five-stage LED detection pipeline showing where the failure originates and how far it propagates">
+  <rect x="0" y="0" width="900" height="360" rx="8" fill="#f6f8fa"/>
+
+  <text x="35" y="34" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" fill="#24292f">LED detection pipeline</text>
+  <text x="35" y="54" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" fill="#57606a">Each stage is a standalone tool with live controls. Colour information is destroyed at stage 1; every stage after it inherits an empty mask.</text>
+
+  <!-- Stage 1 -->
+  <rect x="35" y="78" width="150" height="112" rx="6" fill="#ffffff" stroke="#d0362b" stroke-width="2"/>
+  <text x="47" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#d0362b">MODULE 1</text>
+  <text x="47" y="116" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#24292f">Acquire</text>
+  <text x="47" y="136" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">1280 × 720</text>
+  <text x="47" y="152" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">manual exposure</text>
+  <text x="47" y="168" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">auto WB off</text>
+  <text x="47" y="184" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">brightness · zoom</text>
+
+  <!-- Stage 2 -->
+  <rect x="205" y="78" width="150" height="112" rx="6" fill="#ffffff" stroke="#8c959f" stroke-width="1.5"/>
+  <text x="217" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#6e7781">MODULE 2</text>
+  <text x="217" y="116" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#24292f">Segment</text>
+  <text x="217" y="136" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">BGR → HSV</text>
+  <text x="217" y="152" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">dual-range red</text>
+  <text x="217" y="168" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">inRange threshold</text>
+  <text x="217" y="184" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">H/S/V channels</text>
+
+  <!-- Stage 3 -->
+  <rect x="375" y="78" width="150" height="112" rx="6" fill="#ffffff" stroke="#8c959f" stroke-width="1.5"/>
+  <text x="387" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#6e7781">MODULE 3</text>
+  <text x="387" y="116" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#24292f">Clean</text>
+  <text x="387" y="136" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">Gaussian blur</text>
+  <text x="387" y="152" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">erode</text>
+  <text x="387" y="168" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">dilate</text>
+  <text x="387" y="184" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">staged panels</text>
+
+  <!-- Stage 4 -->
+  <rect x="545" y="78" width="150" height="112" rx="6" fill="#ffffff" stroke="#8c959f" stroke-width="1.5"/>
+  <text x="557" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#6e7781">MODULE 4</text>
+  <text x="557" y="116" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#24292f">Detect</text>
+  <text x="557" y="136" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">contours + circularity</text>
+  <text x="557" y="152" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">— from the mask</text>
+  <text x="557" y="170" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">Hough circles</text>
+  <text x="557" y="185" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">— from greyscale</text>
+
+  <!-- Stage 5 -->
+  <rect x="715" y="78" width="150" height="112" rx="6" fill="#ffffff" stroke="#1a7f37" stroke-width="2"/>
+  <text x="727" y="98" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#1a7f37">MODULE 5</text>
+  <text x="727" y="116" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13.5" font-weight="600" fill="#24292f">Decide</text>
+  <text x="727" y="136" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">area · shape gates</text>
+  <text x="727" y="152" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">stability window</text>
+  <text x="727" y="168" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">±50 px deadband</text>
+  <text x="727" y="184" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">action command</text>
+
+  <!-- Arrows with the artefact passed between stages -->
+  <g stroke="#57606a" stroke-width="1.5" fill="none">
+    <path d="M185 134 L 200 134" marker-end="url(#arrow)"/>
+    <path d="M355 134 L 370 134" marker-end="url(#arrow)"/>
+    <path d="M525 134 L 540 134" marker-end="url(#arrow)"/>
+    <path d="M695 134 L 710 134" marker-end="url(#arrow)"/>
+  </g>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+  </defs>
+
+  <text x="192" y="207" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#6e7781" text-anchor="middle">frame</text>
+  <text x="362" y="207" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#6e7781" text-anchor="middle">mask</text>
+  <text x="532" y="207" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#6e7781" text-anchor="middle">mask</text>
+  <text x="702" y="207" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" fill="#6e7781" text-anchor="middle">contour</text>
+
+  <!-- Failure origin -->
+  <path d="M110 190 L 110 236" stroke="#d0362b" stroke-width="1.5" fill="none" stroke-dasharray="4 3"/>
+  <circle cx="110" cy="240" r="4" fill="#d0362b"/>
+  <text x="35" y="264" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#d0362b">Failure originates here</text>
+  <text x="35" y="280" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">LED clipped to white:</text>
+  <text x="35" y="296" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">V = 255, S ≈ 11.</text>
+  <text x="35" y="312" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a">Background sits at S ≈ 246.</text>
+
+  <!-- Propagation bracket across 2-4 -->
+  <path d="M205 246 L 205 254 L 695 254 L 695 246" stroke="#bf8700" stroke-width="1.5" fill="none"/>
+  <text x="450" y="274" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#bf8700" text-anchor="middle">Every stage here inherits an empty mask</text>
+  <text x="450" y="292" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a" text-anchor="middle">No threshold in modules 2–4 can recover colour that acquisition already discarded.</text>
+  <text x="450" y="308" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" fill="#57606a" text-anchor="middle">Module 4's Hough path is the exception — it reads greyscale, and over-detects instead.</text>
+
+  <text x="35" y="342" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10.5" fill="#8c959f">Measured with tools/sample_hsv.py from module-02-hsv-segmentation/images/02_tuned_mask.jpg</text>
+</svg>

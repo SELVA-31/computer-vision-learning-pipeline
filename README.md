@@ -10,6 +10,8 @@ interactive diagnostic tool with live parameter controls.
 
 Built and tested against an **Arducam IMX298 (B0290)** USB camera on Windows 11.
 
+![Pipeline overview](assets/diagrams/pipeline.svg)
+
 ---
 
 ## What this repository is
@@ -47,6 +49,14 @@ An HSV colour threshold assumes a saturated target against a neutral background.
 Here that assumption is inverted, which is why the binary mask stays empty through
 modules 2, 3 and 4 regardless of how the sliders are set. Tuning cannot fix an
 exposure problem.
+
+Reproduce it from a clone — it reads the committed frame, no camera needed:
+
+```bash
+python tools/sample_hsv.py
+```
+
+Output is kept at [module-02-hsv-segmentation/results/hsv_samples.md](module-02-hsv-segmentation/results/hsv_samples.md).
 
 > Measured from a JPEG-compressed screen recording, not raw sensor frames, so
 > treat the values as indicative. The gap between `S = 11` and `S = 246` is far
@@ -117,14 +127,19 @@ numpy 2.x, described in [module 1](module-01-camera-conditioning/).
 
 ```
 module-0N-name/
+  README.md  purpose, controls, observations, limitations
   code/      the module script
   images/    stills extracted from the recordings
   video/     short clips (full recordings hosted externally)
-  results/   captured output
+  results/   generated output, e.g. module 2's HSV samples
 docs/        parameter reference
-tools/       frame extraction, clip encoding, verification
-assets/      contact sheets
+tools/       verification, auditing, frame extraction, clip encoding
+assets/
+  diagrams/  hand-authored SVG, not generated imagery
 ```
+
+Contact sheets used to browse the recordings are generated locally by
+`tools/extract_frames.py` and deliberately not committed.
 
 ## Tools
 
@@ -134,6 +149,7 @@ assets/      contact sheets
 | `tools/check_repo.py` | Audits the docs against the code: control tables, cited line numbers, image links, file sizes, dependencies |
 | `tools/extract_frames.py` | Contact sheets and full-resolution stills from a recording |
 | `tools/make_clip.py` | Cut a short, repo-sized clip (finds ffmpeg, or uses `imageio-ffmpeg`) |
+| `tools/sample_hsv.py` | Reproduces the HSV measurement behind the main finding |
 
 ```bash
 # Browse a recording as a timestamped thumbnail grid
