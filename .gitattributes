@@ -1,0 +1,16 @@
+# Normalise line endings so Windows checkouts stop reporting phantom changes.
+* text=auto
+
+# Explicit types
+*.py    text diff=python
+*.md    text
+*.txt   text
+*.svg   text
+*.json  text
+
+# Binary - never touch these
+*.jpg   binary
+*.jpeg  binary
+*.png   binary
+*.mp4   binary
+*.gif   binary
