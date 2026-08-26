@@ -185,7 +185,7 @@ buried.
   panel slot, so it is heavily degraded — usable for judging *character*, not detail.
 - No morphological cleanup here; that is [module 3](../module-03-preprocessing/).
 - Bounds do not carry forward. Modules 3–5 hold their own copies in source
-  (module 3 at line 147; modules 4 and 5 inside their preprocess functions).
+  (module 3 in `main()`; modules 4 and 5 inside their preprocess functions).
 
 ## Evidence
 

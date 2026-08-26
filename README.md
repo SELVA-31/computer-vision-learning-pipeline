@@ -42,7 +42,7 @@ Sampling HSV values from a captured frame ([module 2](module-02-hsv-segmentation
 
 The LEDs are clipped to white — `V = 255` with almost no saturation left, so their
 hue readings are meaningless. Meanwhile the background carries strong chroma,
-because auto white balance is disabled in code and the scene sits under a heavy
+because every module disables auto white balance and the scene sits under a heavy
 green cast.
 
 An HSV colour threshold assumes a saturated target against a neutral background.
@@ -117,9 +117,15 @@ against a synthetic frame with no hardware attached:
 python tools/verify_modules.py
 ```
 
-This compiles all five modules and exercises the conditioning, masking and
-contour functions. It found a latent crash in module 1's histogram renderer under
-numpy 2.x, described in [module 1](module-01-camera-conditioning/).
+37 checks: compiles all five modules, exercises the conditioning, masking and
+contour functions, and verifies the 2x2 composite and click routing in every
+module. It found a latent crash in module 1's histogram renderer under numpy 2.x,
+described in [module 1](module-01-camera-conditioning/).
+
+`tools/check_repo.py` runs 57 further checks over the documentation itself —
+control tables against `createTrackbar()` calls, cited claims against the
+functions they name, camera configuration consistency across modules, and image
+links. Run both before every commit.
 
 ---
 
@@ -150,6 +156,11 @@ Contact sheets used to browse the recordings are generated locally by
 | `tools/extract_frames.py` | Contact sheets and full-resolution stills from a recording |
 | `tools/make_clip.py` | Cut a short, repo-sized clip (finds ffmpeg, or uses `imageio-ffmpeg`) |
 | `tools/sample_hsv.py` | Reproduces the HSV measurement behind the main finding |
+
+Run `verify_modules.py` and `check_repo.py` before every commit. Between them they
+have caught a numpy crash on a default-off code path, five stale line citations,
+four tables documenting controls that do not exist, and three modules that were
+inheriting camera state instead of setting it.
 
 ```bash
 # Browse a recording as a timestamped thumbnail grid

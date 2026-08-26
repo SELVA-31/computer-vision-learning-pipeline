@@ -14,11 +14,22 @@ fullscreen_mode = False
 fullscreen_panel = None
 
 
+PANEL_ORDER = ['original', 'mask', 'contours', 'hough']
+HINT = "Click panel to fullscreen | 'q' quit"
+
+
 def nothing(x):
     pass
 
 
 def initialize_camera(device_index: int = 0) -> cv2.VideoCapture:
+    """Open the camera and pin every automatic control.
+
+    Identical in all five modules on purpose: each one must produce the same
+    frames regardless of which module ran before it. Windows camera drivers
+    retain property state between processes, so a module that leaves a control
+    unset inherits whatever the previous run left behind.
+    """
     backends = [cv2.CAP_DSHOW, cv2.CAP_MSMF, cv2.CAP_VFW, cv2.CAP_ANY]
     cap = None
     for backend in backends:
@@ -28,12 +39,14 @@ def initialize_camera(device_index: int = 0) -> cv2.VideoCapture:
             break
         cap.release()
     if cap is None or not cap.isOpened():
-        raise RuntimeError("Failed to open camera. Check connection.")
+        raise RuntimeError("Failed to open camera. Check USB connection.")
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
     cap.set(cv2.CAP_PROP_EXPOSURE, -6.0)
     cap.set(cv2.CAP_PROP_GAIN, 0.0)
+    cap.set(cv2.CAP_PROP_AUTO_WB, 0.0)
+    cap.set(cv2.CAP_PROP_FPS, 30)
     return cap
 
 
@@ -137,45 +150,44 @@ def draw_hough_panel(frame: np.ndarray, circles: np.ndarray) -> np.ndarray:
     return panel
 
 
-def create_single_screen(panels: dict, labels: dict, screen_w: int = 1600, screen_h: int = 900) -> np.ndarray:
+def create_single_screen(panels: dict, labels: dict, order: list, hint: str,
+                         screen_w: int = 1600, screen_h: int = 900) -> np.ndarray:
+    """Composite four panels into one 2x2 window.
+
+    `order` names the panels top-left, top-right, bottom-left, bottom-right.
+    Identical in all five modules -- only the names passed in differ, so this
+    cannot drift between copies. Enforced by tools/check_repo.py.
+    """
     panel_h = screen_h // 2
     panel_w = screen_w // 2
-    layout = {
-        'top_left': ('original', (0, 0)),
-        'top_right': ('mask', (0, panel_w)),
-        'bottom_left': ('contours', (panel_h, 0)),
-        'bottom_right': ('hough', (panel_h, panel_w)),
-    }
+    slots = [(0, 0), (0, panel_w), (panel_h, 0), (panel_h, panel_w)]
     screen = np.zeros((screen_h, screen_w, 3), dtype=np.uint8)
-    for slot_name, (panel_key, (y, x)) in layout.items():
+    for panel_key, (y, x) in zip(order, slots):
         if panel_key not in panels:
             continue
-        panel = panels[panel_key]
-        resized = cv2.resize(panel, (panel_w, panel_h))
+        resized = cv2.resize(panels[panel_key], (panel_w, panel_h))
         label = labels.get(panel_key, panel_key.upper())
         cv2.putText(resized, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
         cv2.rectangle(resized, (0, 0), (panel_w - 1, panel_h - 1), (100, 100, 100), 2)
         screen[y:y + panel_h, x:x + panel_w] = resized
-    cv2.putText(screen, "Click panel to fullscreen | 'q' quit", 
-                (10, screen_h - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+    cv2.putText(screen, hint, (10, screen_h - 15),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     return screen
 
 
 def mouse_callback(event, x, y, flags, param):
-    if event == cv2.EVENT_LBUTTONDOWN:
-        screen_h, screen_w = param['screen_shape']
-        panel_h = screen_h // 2
-        panel_w = screen_w // 2
-        if y < panel_h and x < panel_w:
-            clicked = 'original'
-        elif y < panel_h and x >= panel_w:
-            clicked = 'mask'
-        elif y >= panel_h and x < panel_w:
-            clicked = 'contours'
-        else:
-            clicked = 'hough'
-        param['clicked'] = clicked
-        param['toggle'] = True
+    """Map a click to one of the four quadrants.
+
+    Panel names are read from param['order'], so this function is identical in
+    all five modules. Enforced by tools/check_repo.py.
+    """
+    if event != cv2.EVENT_LBUTTONDOWN:
+        return
+    screen_h, screen_w = param['screen_shape']
+    col = 0 if x < screen_w // 2 else 1
+    row = 0 if y < screen_h // 2 else 1
+    param['clicked'] = param['order'][row * 2 + col]
+    param['toggle'] = True
 
 
 def main():
@@ -191,7 +203,8 @@ def main():
         screen_w, screen_h = 1600, 900
         cv2.namedWindow("Module 4 - Single Screen", cv2.WINDOW_NORMAL)
         cv2.resizeWindow("Module 4 - Single Screen", screen_w, screen_h)
-        mouse_state = {'screen_shape': (screen_h, screen_w), 'clicked': None, 'toggle': False}
+        mouse_state = {'screen_shape': (screen_h, screen_w), 'clicked': None,
+                       'toggle': False, 'order': PANEL_ORDER}
         cv2.setMouseCallback("Module 4 - Single Screen", mouse_callback, mouse_state)
 
         while True:
@@ -258,7 +271,8 @@ def main():
                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 cv2.imshow("Module 4 - Single Screen", fs_img)
             else:
-                screen = create_single_screen(panels, labels, screen_w, screen_h)
+                screen = create_single_screen(panels, labels, PANEL_ORDER, HINT,
+                                              screen_w, screen_h)
                 cv2.imshow("Module 4 - Single Screen", screen)
 
             key = cv2.waitKey(1) & 0xFF

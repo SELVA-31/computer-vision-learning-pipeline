@@ -104,6 +104,42 @@ def main() -> int:
         check(f"disc circularity is near 1.0 (got {circ:.3f})", 0.85 <= circ <= 1.05)
 
     print()
+    print("All modules - 2x2 layout and click routing")
+    for module_dir in sorted(ROOT.glob("module-0*")):
+        sources = sorted((module_dir / "code").glob("*.py"))
+        if not sources:
+            continue
+        mod = load(sources[0].relative_to(ROOT).as_posix(), sources[0].stem)
+        order, hint = mod.PANEL_ORDER, mod.HINT
+        panels = {key: frame for key in order}
+        labels = {key: key.upper() for key in order}
+
+        screen = mod.create_single_screen(panels, labels, order, hint, 1600, 900)
+        check(f"{module_dir.name}: composite is 900x1600",
+              screen.shape == (900, 1600, 3), f"got {screen.shape}")
+        quadrants = [screen[0:450, 0:800], screen[0:450, 800:1600],
+                     screen[450:900, 0:800], screen[450:900, 800:1600]]
+        check(f"{module_dir.name}: all four quadrants painted",
+              all(q.any() for q in quadrants))
+
+        # A click in each quadrant must select the panel that was drawn there.
+        centres = [(400, 200), (1200, 200), (400, 700), (1200, 700)]
+        routed = []
+        for (cx, cy) in centres:
+            state = {"screen_shape": (900, 1600), "clicked": None,
+                     "toggle": False, "order": order}
+            mod.mouse_callback(cv2.EVENT_LBUTTONDOWN, cx, cy, 0, state)
+            routed.append(state["clicked"])
+        check(f"{module_dir.name}: clicks route to {order}", routed == order,
+              f"got {routed}")
+
+        state = {"screen_shape": (900, 1600), "clicked": None,
+                 "toggle": False, "order": order}
+        mod.mouse_callback(cv2.EVENT_MOUSEMOVE, 400, 200, 0, state)
+        check(f"{module_dir.name}: mouse move does not toggle fullscreen",
+              state["toggle"] is False)
+
+    print()
     if failures:
         print(f"{len(failures)} check(s) FAILED: {', '.join(failures)}")
         return 1

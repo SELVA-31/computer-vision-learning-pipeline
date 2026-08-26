@@ -159,7 +159,7 @@ agreeing with itself.** Contradiction localises the fault. Confirmation does not
 
 - HSV bounds are hardcoded inside `preprocess_for_detection()`; no slider reaches
   them.
-- `minDist=50` and `param1=100` are hardcoded at `module4_pattern_detection.py:107`-108.
+- `minDist=50` and `param1=100` are hardcoded inside `detect_hough_circles()`.
 - The two paths cannot be cross-checked in code — no logic compares a Hough circle
   against a contour, so agreement between them is judged by eye.
 - Circularity is unreliable below roughly 50 px of area, where pixel

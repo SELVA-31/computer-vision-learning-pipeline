@@ -15,12 +15,22 @@ fullscreen_mode = False
 fullscreen_panel = None
 
 
+PANEL_ORDER = ['main', 'histogram', 'grid', 'zoom']
+HINT = "Click any panel to fullscreen | Press 'q' to quit"
+
+
 def nothing(x):
     pass
 
 
 def initialize_camera(device_index: int = 0) -> cv2.VideoCapture:
-    """Initialize camera with fallback backends."""
+    """Open the camera and pin every automatic control.
+
+    Identical in all five modules on purpose: each one must produce the same
+    frames regardless of which module ran before it. Windows camera drivers
+    retain property state between processes, so a module that leaves a control
+    unset inherits whatever the previous run left behind.
+    """
     backends = [cv2.CAP_DSHOW, cv2.CAP_MSMF, cv2.CAP_VFW, cv2.CAP_ANY]
     cap = None
     for backend in backends:
@@ -119,65 +129,44 @@ def zoom_image(image: np.ndarray, zoom_factor: float) -> np.ndarray:
     return cv2.resize(cropped, (w, h))
 
 
-def create_single_screen(panels: dict, labels: dict, screen_w: int = 1600, screen_h: int = 900) -> np.ndarray:
+def create_single_screen(panels: dict, labels: dict, order: list, hint: str,
+                         screen_w: int = 1600, screen_h: int = 900) -> np.ndarray:
+    """Composite four panels into one 2x2 window.
+
+    `order` names the panels top-left, top-right, bottom-left, bottom-right.
+    Identical in all five modules -- only the names passed in differ, so this
+    cannot drift between copies. Enforced by tools/check_repo.py.
     """
-    Arrange multiple panels into a single screen layout.
-    panels: dict of panel_name -> image
-    labels: dict of panel_name -> label text
-    """
-    # Define layout: 2x2 grid
     panel_h = screen_h // 2
     panel_w = screen_w // 2
-    
-    layout = {
-        'top_left': ('main', (0, 0)),
-        'top_right': ('histogram', (0, panel_w)),
-        'bottom_left': ('grid', (panel_h, 0)),
-        'bottom_right': ('zoom', (panel_h, panel_w)),
-    }
-    
+    slots = [(0, 0), (0, panel_w), (panel_h, 0), (panel_h, panel_w)]
     screen = np.zeros((screen_h, screen_w, 3), dtype=np.uint8)
-    
-    for slot_name, (panel_key, (y, x)) in layout.items():
+    for panel_key, (y, x) in zip(order, slots):
         if panel_key not in panels:
             continue
-        panel = panels[panel_key]
-        # Resize panel to fit slot
-        resized = cv2.resize(panel, (panel_w, panel_h))
-        # Add label
+        resized = cv2.resize(panels[panel_key], (panel_w, panel_h))
         label = labels.get(panel_key, panel_key.upper())
         cv2.putText(resized, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-        # Add border
         cv2.rectangle(resized, (0, 0), (panel_w - 1, panel_h - 1), (100, 100, 100), 2)
-        # Place on screen
         screen[y:y + panel_h, x:x + panel_w] = resized
-    
-    # Add instruction overlay
-    instruction = "Click any panel to fullscreen | Press 'q' to quit"
-    cv2.putText(screen, instruction, (10, screen_h - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
-    
+    cv2.putText(screen, hint, (10, screen_h - 15),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     return screen
 
 
 def mouse_callback(event, x, y, flags, param):
-    """Handle mouse clicks to toggle fullscreen on panels."""
-    if event == cv2.EVENT_LBUTTONDOWN:
-        screen_h, screen_w = param['screen_shape']
-        panel_h = screen_h // 2
-        panel_w = screen_w // 2
+    """Map a click to one of the four quadrants.
 
-        # Determine which panel was clicked
-        if y < panel_h and x < panel_w:
-            clicked = 'main'
-        elif y < panel_h and x >= panel_w:
-            clicked = 'histogram'
-        elif y >= panel_h and x < panel_w:
-            clicked = 'grid'
-        else:
-            clicked = 'zoom'
-
-        param['clicked'] = clicked
-        param['toggle'] = True
+    Panel names are read from param['order'], so this function is identical in
+    all five modules. Enforced by tools/check_repo.py.
+    """
+    if event != cv2.EVENT_LBUTTONDOWN:
+        return
+    screen_h, screen_w = param['screen_shape']
+    col = 0 if x < screen_w // 2 else 1
+    row = 0 if y < screen_h // 2 else 1
+    param['clicked'] = param['order'][row * 2 + col]
+    param['toggle'] = True
 
 
 def main():
@@ -202,7 +191,8 @@ def main():
         screen_w, screen_h = 1600, 900
         cv2.namedWindow("Module 1 - Single Screen", cv2.WINDOW_NORMAL)
         cv2.resizeWindow("Module 1 - Single Screen", screen_w, screen_h)
-        mouse_state = {'screen_shape': (screen_h, screen_w), 'clicked': None, 'toggle': False}
+        mouse_state = {'screen_shape': (screen_h, screen_w), 'clicked': None,
+                       'toggle': False, 'order': PANEL_ORDER}
         cv2.setMouseCallback("Module 1 - Single Screen", mouse_callback, mouse_state)
 
         while True:
@@ -304,7 +294,8 @@ def main():
                 cv2.imshow("Module 1 - Single Screen", fullscreen_img)
             else:
                 # Show grid layout
-                screen = create_single_screen(panels, labels, screen_w, screen_h)
+                screen = create_single_screen(panels, labels, PANEL_ORDER, HINT,
+                                              screen_w, screen_h)
                 cv2.imshow("Module 1 - Single Screen", screen)
 
             key = cv2.waitKey(1) & 0xFF

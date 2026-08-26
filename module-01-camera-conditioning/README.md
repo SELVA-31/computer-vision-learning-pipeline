@@ -41,6 +41,29 @@ Backend selection falls back through `CAP_DSHOW → CAP_MSMF → CAP_VFW → CAP
 taking the first that opens. Windows exposes the same camera through several
 backends with different property support; hardcoding one is a portability trap.
 
+### Every module pins the camera identically, and that is not cosmetic
+
+`initialize_camera()` is byte-identical in all five modules. It was not always.
+
+An audit of the five copies found that **modules 3, 4 and 5 never set
+`CAP_PROP_AUTO_WB`** — only modules 1 and 2 did. Their recordings still show the
+same green cast, which means those modules were not configuring white balance at
+all; they were inheriting it from whichever module had run before them.
+
+Windows camera drivers keep property state between processes. Run module 1, quit,
+then run module 3, and module 3 gets manual white balance it never asked for. Run
+module 3 first after a reboot and it gets auto white balance instead. Same code,
+same camera, different frames — and nothing on screen says which one you have.
+
+That is a reproducibility bug, not a style issue, and it is the sort that produces
+"it worked yesterday" with no way to explain why. All five modules now set every
+property explicitly, and `tools/check_repo.py` fails the build if any module stops
+doing so.
+
+**Design principle: a stage that depends on state it does not set is not
+reproducible, even when it appears to work.** Inherited state is invisible
+precisely when it is helping you.
+
 ---
 
 ## Controls
@@ -159,7 +182,7 @@ manual test misses.
 
 ## Limitations
 
-- `exposure` and `gain` are read **once before the loop** (lines 196–197). The
+- `exposure` and `gain` are read **once in `main()` before the frame loop**. The
   `Gain: 0.00` readout is a startup snapshot, not live. Exposure stays correct
   only because the `+`/`-` handlers update the local variable.
 - FPS is instantaneous and unsmoothed, so the figure jitters frame to frame.

@@ -12,6 +12,8 @@ claims that can be checked mechanically:
   5. Line citations    - "line N" references land inside their file
   6. Dependencies      - requirements.txt covers what the modules import
   7. Content claims    - cited lines still contain what the README says they do
+  8. Camera config     - all modules pin the same camera properties
+  9. Shared scaffold   - copied helper functions have not drifted apart
 
 Run:  python tools/check_repo.py
 Exit code 0 = clean, 1 = findings.
@@ -37,18 +39,21 @@ STDLIB = {"math", "time", "os", "sys", "argparse", "shutil", "subprocess",
 
 DIST_TO_IMPORT = {"opencv-python": "cv2", "imageio-ffmpeg": "imageio_ffmpeg"}
 
-# (module dir, 1-based line, text that line must contain, what the README claims)
+# (module dir, function name, text that must appear inside it, what the README says)
+# Pinned to functions rather than line numbers: line numbers moved three times
+# during development and invalidated every citation each time. Function names
+# survive edits above them.
 CLAIMS = [
-    ("module-01-camera-conditioning", 196, "cap.get(cv2.CAP_PROP_EXPOSURE)",
-     "module 1 README: exposure read once before the loop"),
-    ("module-01-camera-conditioning", 197, "cap.get(cv2.CAP_PROP_GAIN)",
-     "module 1 README: gain read once before the loop"),
-    ("module-03-preprocessing", 147, '"h_lower": 0, "s_lower": 120',
-     "module 2 README: module 3 holds its own HSV bounds"),
-    ("module-04-pattern-detection", 107, "minDist=50",
-     "module 4 README: Hough minDist hardcoded"),
-    ("module-04-pattern-detection", 108, "param1=100",
-     "module 4 README: Hough param1 hardcoded"),
+    ("module-01-camera-conditioning", "main", "exposure = cap.get(cv2.CAP_PROP_EXPOSURE)",
+     "module 1 README: exposure read once in main() before the loop"),
+    ("module-01-camera-conditioning", "main", "gain = cap.get(cv2.CAP_PROP_GAIN)",
+     "module 1 README: gain read once in main() before the loop"),
+    ("module-03-preprocessing", "main", '"h_lower": 0, "s_lower": 120',
+     "module 2 README: module 3 holds its own HSV bounds in main()"),
+    ("module-04-pattern-detection", "detect_hough_circles", "minDist=50",
+     "module 4 README: Hough minDist hardcoded in detect_hough_circles()"),
+    ("module-04-pattern-detection", "detect_hough_circles", "param1=100",
+     "module 4 README: Hough param1 hardcoded in detect_hough_circles()"),
 ]
 
 # Facts asserted in prose that must remain true of the source as a whole.
@@ -290,19 +295,25 @@ def check_requirements():
 def check_claims():
     print()
     print("[7] Content-verified documentation claims")
-    for module, lineno, expected, label in CLAIMS:
+    for module, fn_name, expected, label in CLAIMS:
         source = source_for(module)
         if source is None:
             fail(f"{label}: no source found under {module}/code/")
             continue
-        lines = source.read_text(encoding="utf-8").splitlines()
-        if lineno > len(lines):
-            fail(f"{label}: line {lineno} past end of {source.name}")
-        elif expected not in lines[lineno - 1]:
-            fail(f"{label}: {source.name}:{lineno} no longer contains "
+        text = source.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        body = None
+        for node in ast.walk(ast.parse(text)):
+            if isinstance(node, (ast.FunctionDef, ast.ClassDef)) and node.name == fn_name:
+                body = lines[node.lineno - 1:node.end_lineno]
+                break
+        if body is None:
+            fail(f"{label}: {source.name} has no function named {fn_name}()")
+        elif not any(expected in line for line in body):
+            fail(f"{label}: {fn_name}() in {source.name} no longer contains "
                  f"'{expected}' - update the README")
         else:
-            ok(f"{label} ({source.name}:{lineno})")
+            ok(f"{label}")
 
     for module, expected, label in SUBSTRING_CLAIMS:
         source = source_for(module)
@@ -319,6 +330,93 @@ def check_claims():
             ok(label)
 
 
+def check_camera_config():
+    """Every module must configure the camera identically.
+
+    Windows camera drivers keep property state between processes. A module that
+    leaves a control unset silently inherits whatever the previous run left
+    behind, so running module 3 after module 1 gives different frames than
+    running it after a reboot. Divergence here is a reproducibility bug, not a
+    style issue.
+    """
+    print()
+    print("[8] Camera configuration consistency")
+    props = ["CAP_PROP_FRAME_WIDTH", "CAP_PROP_FRAME_HEIGHT", "CAP_PROP_AUTO_EXPOSURE",
+             "CAP_PROP_EXPOSURE", "CAP_PROP_GAIN", "CAP_PROP_AUTO_WB", "CAP_PROP_FPS"]
+    table = {}
+    for module_dir in sorted(ROOT.glob("module-0*")):
+        source = source_for(module_dir.name)
+        if source is None:
+            continue
+        text = source.read_text(encoding="utf-8")
+        table[module_dir.name] = {
+            prop: (re.search(rf"cv2\.{prop},\s*([-\d.]+)\)", text) or [None, None])[1]
+            for prop in props
+        }
+    if len(table) < 2:
+        warn("fewer than two modules found, nothing to compare")
+        return
+    for prop in props:
+        values = {name: cfg[prop] for name, cfg in table.items()}
+        distinct = set(values.values())
+        if len(distinct) == 1:
+            only = distinct.pop()
+            if only is None:
+                warn(f"{prop} is set by no module")
+            else:
+                ok(f"{prop} = {only} in all {len(values)} modules")
+        else:
+            odd = [n for n, v in values.items() if v is None]
+            if odd:
+                fail(f"{prop} is not set by: {', '.join(sorted(odd))} "
+                     f"- those modules inherit stale driver state")
+            else:
+                fail(f"{prop} differs across modules: "
+                     + ", ".join(f"{n}={v}" for n, v in sorted(values.items())))
+
+
+SHARED_FUNCTIONS = ("nothing", "initialize_camera", "mouse_callback",
+                    "create_single_screen")
+
+
+def check_shared_functions():
+    """The scaffolding each module copies must stay byte-identical.
+
+    These five programs are deliberately standalone - a reader can copy one file
+    and run it. The cost of that choice is five copies of the same scaffolding,
+    and copies drift. Keeping them identical means the duplication is a
+    deliberate trade-off rather than an accident waiting to bite.
+    """
+    print()
+    print("[9] Shared scaffolding is identical across modules")
+    import hashlib
+    seen = {}
+    for module_dir in sorted(ROOT.glob("module-0*")):
+        source = source_for(module_dir.name)
+        if source is None:
+            continue
+        text = source.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        for node in ast.parse(text).body:
+            if isinstance(node, ast.FunctionDef) and node.name in SHARED_FUNCTIONS:
+                body = "\n".join(l.rstrip()
+                                 for l in lines[node.lineno - 1:node.end_lineno]
+                                 if l.strip())
+                digest = hashlib.md5(body.encode()).hexdigest()
+                seen.setdefault(node.name, {}).setdefault(digest, []).append(module_dir.name)
+
+    for name in SHARED_FUNCTIONS:
+        variants = seen.get(name)
+        if not variants:
+            fail(f"{name}() is missing from every module")
+        elif len(variants) == 1:
+            copies = sum(len(v) for v in variants.values())
+            ok(f"{name}() identical across {copies} modules")
+        else:
+            groups = " | ".join(", ".join(sorted(v)) for v in variants.values())
+            fail(f"{name}() has {len(variants)} variants: {groups}")
+
+
 def main():
     print(f"Auditing {ROOT.name}")
     check_sizes()
@@ -328,6 +426,8 @@ def main():
     check_line_citations()
     check_requirements()
     check_claims()
+    check_camera_config()
+    check_shared_functions()
 
     print()
     print("=" * 62)
