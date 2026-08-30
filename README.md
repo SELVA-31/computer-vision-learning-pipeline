@@ -25,14 +25,14 @@ Developed against an **Arducam IMX298 (B0290)** USB camera on Windows 11.
 
 ## What this repository is
 
-Five programs that each isolate one stage of a detection pipeline, so the effect
-of every parameter can be observed live rather than inferred from a final result.
 Module 1 conditions the camera, module 2 segments by colour, module 3 cleans the
 mask, module 4 finds shapes, and module 5 turns detections into decisions.
 
-The value here is not the individual OpenCV calls. It is what the staged
-diagnostics revealed about why the pipeline failed on real hardware — documented
-in each module's README with the frames that show it.
+The value is not in the individual OpenCV calls — those are standard. It is in
+what became visible once each stage could be inspected on its own: the pipeline
+does not detect the LED, and the reason is measurable and sits in the first
+stage. Each module README records what was observed, with the frame that shows
+it and the limitations that remain.
 
 ---
 
