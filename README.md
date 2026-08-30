@@ -15,10 +15,6 @@ output alone would never have explained.
 
 Developed against an **Arducam IMX298 (B0290)** USB camera on Windows 11.
 
-<!-- Paste your LinkedIn post link on the line below, then delete this comment.
-**Write-up:** [post title](https://www.linkedin.com/...)
--->
-
 ![Pipeline overview](assets/diagrams/pipeline.svg)
 
 ---
