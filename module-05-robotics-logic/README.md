@@ -184,8 +184,8 @@ trade-off is responsiveness after transients.
 
 ## Evidence
 
-Stills in `images/` are extracted from `vedios/module_5.mp4`, recorded against the
-current source.
+Stills in `images/` are extracted from `vedios/module_5.mp4`, recorded in May 2026.
+The source has since been tidied without changing on-screen behaviour.
 
 ## Running it
 

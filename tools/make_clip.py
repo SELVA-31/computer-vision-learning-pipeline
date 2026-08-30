@@ -60,7 +60,8 @@ def main() -> None:
     parser.add_argument("-o", "--out", required=True, help="output .mp4 path")
     parser.add_argument("--start", default="0", help="start timestamp, e.g. 01:10")
     parser.add_argument("--dur", type=float, default=30.0, help="clip length in seconds")
-    parser.add_argument("--width", type=int, default=1280, help="output width, height follows aspect")
+    parser.add_argument("--width", type=int, default=1280,
+                        help="output width, height follows aspect")
     parser.add_argument("--fps", type=int, default=20, help="output frame rate")
     parser.add_argument("--crf", type=int, default=30,
                         help="quality, 18=near-lossless 30=small 35=tiny")

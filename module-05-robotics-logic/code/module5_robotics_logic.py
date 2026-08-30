@@ -64,7 +64,8 @@ class LEDTracker:
                 "detected": False, "centroid": self.last_valid_centroid,
                 "area": self.last_valid_area, "distance_factor": 0.0,
                 "circularity": 0.0, "stable": False,
-                "reason": "No contours", "detection_rate": self.detection_count / max(self.total_frames, 1),
+                "reason": "No contours",
+                "detection_rate": self.detection_count / max(self.total_frames, 1),
             }
         best_contour = None
         best_score = -1
@@ -87,7 +88,8 @@ class LEDTracker:
                 "detected": False, "centroid": self.last_valid_centroid,
                 "area": self.last_valid_area, "distance_factor": 0.0,
                 "circularity": 0.0, "stable": False,
-                "reason": "No valid contour", "detection_rate": self.detection_count / max(self.total_frames, 1),
+                "reason": "No valid contour",
+                "detection_rate": self.detection_count / max(self.total_frames, 1),
             }
         self.detection_count += 1
         area = cv2.contourArea(best_contour)
@@ -99,7 +101,8 @@ class LEDTracker:
         self.detection_history.append(True)
         if len(self.detection_history) > self.stability_frames:
             self.detection_history.pop(0)
-        stable = all(self.detection_history) and len(self.detection_history) >= self.stability_frames
+        stable = (all(self.detection_history)
+                  and len(self.detection_history) >= self.stability_frames)
         return {
             "detected": True, "centroid": centroid, "area": area,
             "distance_factor": dist, "circularity": circ, "stable": stable,
@@ -183,7 +186,7 @@ def draw_tracking_overlay(frame: np.ndarray, data: dict) -> np.ndarray:
         cv2.line(panel, (cx_frame, cy_frame), (cx, cy), color, 2)
         dx, dy = cx - cx_frame, cy - cy_frame
         cv2.putText(panel, f"Offset: ({dx:+d}, {dy:+d})", (cx + 15, cy - 15),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+                                                           cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
         info = [
             f"Centroid: ({cx}, {cy})",
             f"Area: {int(data['area'])}",
@@ -209,7 +212,8 @@ def create_distance_graph(data: dict, width: int = 400, height: int = 200) -> np
     for i in range(6):
         x = int((i / 5) * width)
         cv2.line(graph, (x, 0), (x, height), (255, 255, 255), 1)
-        cv2.putText(graph, f"{i/5:.1f}", (x - 10, height - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+        cv2.putText(graph, f"{i/5:.1f}", (x - 10, height - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.4,
+                    (255, 255, 255), 1)
     if data["detected"]:
         pos_x = int(data["distance_factor"] * width)
         pos_x = min(pos_x, width - 10)
@@ -217,7 +221,8 @@ def create_distance_graph(data: dict, width: int = 400, height: int = 200) -> np
         cv2.circle(graph, (pos_x, height // 2), 15, (0, 0, 0), 2)
         cv2.putText(graph, f"{data['distance_factor']:.2f}", (pos_x - 25, height // 2 - 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-    cv2.putText(graph, "Distance (0=Far, 1=Close)", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+    cv2.putText(graph, "Distance (0=Far, 1=Close)", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                (255, 255, 255), 1)
     return graph
 
 
@@ -237,22 +242,25 @@ def create_position_tracker(data: dict, width: int = 400, height: int = 400) -> 
         cv2.circle(tracker, (pos_x, pos_y), 10, color, -1)
         cv2.circle(tracker, (pos_x, pos_y), 15, color, 2)
         cv2.putText(tracker, f"({data['centroid'][0]}, {data['centroid'][1]})",
-                    (pos_x + 15, pos_y - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-    cv2.putText(tracker, "Position Tracker", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+                                (pos_x + 15, pos_y - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+    cv2.putText(tracker, "Position Tracker", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                (255, 255, 255), 1)
     return tracker
 
 
 def create_dashboard(data: dict, params: dict, fps: float) -> np.ndarray:
     width, height = 600, 500
     dash = np.zeros((height, width, 3), dtype=np.uint8)
-    cv2.putText(dash, "ROBOTICS DASHBOARD", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+    cv2.putText(dash, "ROBOTICS DASHBOARD", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255),
+                2)
     if data["detected"]:
         status_color = (0, 255, 0) if data["stable"] else (0, 165, 255)
         status_text = "DETECTED" if data["stable"] else "DETECTED (UNSTABLE)"
     else:
         status_color = (0, 0, 255)
         status_text = "NOT DETECTED"
-    cv2.putText(dash, f"Status: {status_text}", (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, status_color, 2)
+    cv2.putText(dash, f"Status: {status_text}", (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                status_color, 2)
     y = 110
     metrics = [
         f"FPS: {fps:.1f}",
@@ -277,7 +285,8 @@ def create_dashboard(data: dict, params: dict, fps: float) -> np.ndarray:
             action = "TURN LEFT"
         else:
             action = "TURN RIGHT"
-        cv2.putText(dash, f"Action: {action}", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        cv2.putText(dash, f"Action: {action}", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0),
+                    2)
     else:
         cv2.putText(dash, "Action: SEARCH", (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
     return dash
@@ -304,7 +313,7 @@ def create_single_screen(panels: dict, labels: dict, order: list, hint: str,
         cv2.rectangle(resized, (0, 0), (panel_w - 1, panel_h - 1), (100, 100, 100), 2)
         screen[y:y + panel_h, x:x + panel_w] = resized
     cv2.putText(screen, hint, (10, screen_h - 15),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     return screen
 
 
@@ -407,8 +416,8 @@ def main():
             # Render
             if fullscreen_mode and fullscreen_panel in panels:
                 fs_img = cv2.resize(panels[fullscreen_panel], (screen_w, screen_h))
-                cv2.putText(fs_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT", 
-                           (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(fs_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT",
+                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 cv2.imshow("Module 5 - Single Screen", fs_img)
             else:
                 screen = create_single_screen(panels, labels, PANEL_ORDER, HINT,
@@ -416,7 +425,8 @@ def main():
                 cv2.imshow("Module 5 - Single Screen", screen)
 
             if data["stable"]:
-                print(f"\r[STABLE] C:{data['centroid']} A:{int(data['area'])} D:{data['distance_factor']:.2f}", end="")
+                print(f"\r[STABLE] C:{data['centroid']} A:{int(data['area'])} "
+                      f"D:{data['distance_factor']:.2f}", end="")
 
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):

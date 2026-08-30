@@ -98,7 +98,8 @@ def preprocess_frame(frame: np.ndarray, params: dict, hsv_bounds: dict) -> dict:
     return results
 
 
-def create_diff_visualization(raw_mask: np.ndarray, eroded: np.ndarray, dilated: np.ndarray) -> np.ndarray:
+def create_diff_visualization(raw_mask: np.ndarray, eroded: np.ndarray,
+                              dilated: np.ndarray) -> np.ndarray:
     removed = cv2.subtract(raw_mask, eroded)
     added = cv2.subtract(dilated, eroded)
     vis = np.zeros((raw_mask.shape[0], raw_mask.shape[1], 3), dtype=np.uint8)
@@ -130,7 +131,7 @@ def create_single_screen(panels: dict, labels: dict, order: list, hint: str,
         cv2.rectangle(resized, (0, 0), (panel_w - 1, panel_h - 1), (100, 100, 100), 2)
         screen[y:y + panel_h, x:x + panel_w] = resized
     cv2.putText(screen, hint, (10, screen_h - 15),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     return screen
 
 
@@ -211,15 +212,16 @@ def main():
             labels['cleaned'] = f"CLEANED ({params['dilate_iter']}x dilate)"
 
             # Also create diff panel for fullscreen viewing
-            diff_vis = create_diff_visualization(results["raw_mask"], results["eroded"], results["cleaned_mask"])
+            diff_vis = create_diff_visualization(results["raw_mask"], results["eroded"],
+                                                 results["cleaned_mask"])
             panels['diff'] = diff_vis
             labels['diff'] = "DIFF VISUALIZATION"
 
             # Render
             if fullscreen_mode and fullscreen_panel in panels:
                 fs_img = cv2.resize(panels[fullscreen_panel], (screen_w, screen_h))
-                cv2.putText(fs_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT", 
-                           (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(fs_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT",
+                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 cv2.imshow("Module 3 - Single Screen", fs_img)
             else:
                 screen = create_single_screen(panels, labels, PANEL_ORDER, HINT,

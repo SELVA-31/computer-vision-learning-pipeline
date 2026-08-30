@@ -150,7 +150,7 @@ def create_single_screen(panels: dict, labels: dict, order: list, hint: str,
         cv2.rectangle(resized, (0, 0), (panel_w - 1, panel_h - 1), (100, 100, 100), 2)
         screen[y:y + panel_h, x:x + panel_w] = resized
     cv2.putText(screen, hint, (10, screen_h - 15),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     return screen
 
 
@@ -233,45 +233,48 @@ def main():
             # Create panels
             panels = {}
             labels = {}
-            
+
             # Main panel
             main_panel = display.copy()
+            cap_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            cap_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             info_lines = [
                 f"FPS: {fps:.1f}",
-                f"Res: {int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))}x{int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))}",
+                f"Res: {cap_w}x{cap_h}",
                 f"Exp: {exposure:.1f} Gain: {gain:.1f}",
                 f"B:{brightness-50:+d} C:{contrast-50:+d} S:{saturation/50.0:.1f}x",
             ]
             y = 30
             for line in info_lines:
-                cv2.putText(main_panel, line, (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                cv2.putText(main_panel, line, (10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0),
+                            1)
                 y += 20
             panels['main'] = main_panel
             labels['main'] = "MAIN VIEW"
-            
+
             # Grid panel
             if show_grid:
                 grid_panel = draw_grid(display.copy())
             else:
                 grid_panel = np.zeros_like(display)
-                cv2.putText(grid_panel, "GRID OFF", (display.shape[1]//2 - 50, display.shape[0]//2), 
+                cv2.putText(grid_panel, "GRID OFF", (display.shape[1]//2 - 50, display.shape[0]//2),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (100, 100, 100), 2)
             panels['grid'] = grid_panel
             labels['grid'] = "GRID OVERLAY"
-            
+
             # Zoom panel
             zoom_factor = zoom / 10.0
             if zoom_factor > 1.0:
                 zoom_panel = zoom_image(display.copy(), zoom_factor)
-                cv2.putText(zoom_panel, f"Zoom: {zoom_factor:.1f}x", (10, 30), 
+                cv2.putText(zoom_panel, f"Zoom: {zoom_factor:.1f}x", (10, 30),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
             else:
                 zoom_panel = display.copy()
-                cv2.putText(zoom_panel, "Zoom: 1.0x", (10, 30), 
+                cv2.putText(zoom_panel, "Zoom: 1.0x", (10, 30),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
             panels['zoom'] = zoom_panel
             labels['zoom'] = "ZOOM VIEW"
-            
+
             # Histogram panel
             if show_histogram:
                 # draw_histogram() already returns the frame with the RGB
@@ -280,7 +283,8 @@ def main():
                 hist_panel = draw_histogram(display)
             else:
                 hist_panel = display.copy()
-                cv2.putText(hist_panel, "HISTOGRAM OFF", (display.shape[1]//2 - 80, display.shape[0]//2), 
+                cv2.putText(hist_panel, "HISTOGRAM OFF",
+                            (display.shape[1]//2 - 80, display.shape[0]//2),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (100, 100, 100), 2)
             panels['histogram'] = hist_panel
             labels['histogram'] = "HISTOGRAM"
@@ -289,8 +293,8 @@ def main():
             if fullscreen_mode and fullscreen_panel in panels:
                 # Show fullscreen panel
                 fullscreen_img = cv2.resize(panels[fullscreen_panel], (screen_w, screen_h))
-                cv2.putText(fullscreen_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT", 
-                           (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(fullscreen_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT",
+                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 cv2.imshow("Module 1 - Single Screen", fullscreen_img)
             else:
                 # Show grid layout

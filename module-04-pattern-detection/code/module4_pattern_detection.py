@@ -140,13 +140,19 @@ def draw_contour_panel(frame: np.ndarray, contours_info: list) -> np.ndarray:
 
 def draw_hough_panel(frame: np.ndarray, circles: np.ndarray) -> np.ndarray:
     panel = frame.copy()
+    # Show the count. Without it the panel reads as "lots of circles" and the
+    # difference between 8 and 800 - which is the whole story on a textured
+    # background - is invisible.
+    count = 0 if circles is None else len(circles[0])
+    cv2.putText(panel, f"circles: {count}", (10, panel.shape[0] - 15),
+                                             cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
     if circles is not None:
         circles = np.uint16(np.around(circles))
         for c in circles[0, :]:
             cv2.circle(panel, (c[0], c[1]), c[2], (255, 255, 0), 2)
             cv2.circle(panel, (c[0], c[1]), 3, (0, 0, 255), -1)
             cv2.putText(panel, f"r={c[2]}", (c[0] + 10, c[1] - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 0), 1)
+                                             cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 0), 1)
     return panel
 
 
@@ -171,7 +177,7 @@ def create_single_screen(panels: dict, labels: dict, order: list, hint: str,
         cv2.rectangle(resized, (0, 0), (panel_w - 1, panel_h - 1), (100, 100, 100), 2)
         screen[y:y + panel_h, x:x + panel_w] = resized
     cv2.putText(screen, hint, (10, screen_h - 15),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     return screen
 
 
@@ -267,8 +273,8 @@ def main():
             # Render
             if fullscreen_mode and fullscreen_panel in panels:
                 fs_img = cv2.resize(panels[fullscreen_panel], (screen_w, screen_h))
-                cv2.putText(fs_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT", 
-                           (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(fs_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT",
+                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 cv2.imshow("Module 4 - Single Screen", fs_img)
             else:
                 screen = create_single_screen(panels, labels, PANEL_ORDER, HINT,

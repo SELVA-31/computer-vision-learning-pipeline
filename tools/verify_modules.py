@@ -78,13 +78,13 @@ def main() -> int:
     mask = m2.apply_hsv_mask(hsv, red)
     covered = int((mask > 0).sum())
     check(f"dual-range red mask covers the disc ({covered}/{disc_px} px)",
-          covered > disc_px * 0.9)
+                                                 covered > disc_px * 0.9)
 
     # Known behaviour, documented in the module README rather than fixed:
     # with Red Mode on, the hue bounds are hardcoded and the H sliders do nothing.
     shifted = m2.apply_hsv_mask(hsv, dict(red, h_lower=90, h_upper=130))
     check("Red Mode bypasses the H sliders (known, documented)",
-          np.array_equal(shifted, mask))
+                                            np.array_equal(shifted, mask))
 
     # With Red Mode off the sliders take effect, and a blue window finds no red.
     blue = dict(red, red_mode=0, h_lower=90, h_upper=130)

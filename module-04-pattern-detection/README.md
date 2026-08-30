@@ -66,6 +66,15 @@ Contours are drawn green when they pass the circularity threshold and red when
 they fail, each annotated with its measured value — so rejected candidates stay
 visible with the reason attached.
 
+## Panels
+
+| Position | Panel | Shows |
+|---|---|---|
+| Top left | ORIGINAL | Unmodified frame |
+| Top right | MASK | HSV mask the contour path reads |
+| Bottom left | CONTOURS | Contours drawn green if they pass circularity, red if not |
+| Bottom right | HOUGH CIRCLES | Circles found in greyscale, with radius labels |
+
 ## Processing flow
 
 ```
@@ -91,8 +100,8 @@ Same frame, same instant:
 
 - **CONTOURS finds nothing.** The mask is near-empty, inherited from
   [module 2](../module-02-hsv-segmentation/), so there is nothing to contour.
-- **HOUGH finds hundreds of circles**, blanketing the breadboard in overlapping
-  rings.
+- **HOUGH finds so many circles the panel becomes a mesh** of overlapping rings
+  across the breadboard.
 
 Both detectors are working exactly as designed. The inputs are what differ.
 
@@ -166,13 +175,14 @@ agreeing with itself.** Contradiction localises the fault. Confirmation does not
   stair-stepping dominates the perimeter.
 - Hough runs on every frame at full resolution regardless of whether the mask has
   any content, which is the dominant per-frame cost.
-- No detection count is displayed, so "hundreds of circles" is an observation from
-  the panel rather than a logged number.
+- The Hough panel now prints a live `circles: N` count, but the recordings
+  predate it — the figures in this README describe what the panel looks like, not
+  a number read off the screen. Run the module to get the count for your scene.
 
 ## Evidence
 
-Stills in `images/` are extracted from `vedios/module_4.mp4`, recorded against the
-current source.
+Stills in `images/` are extracted from `vedios/module_4.mp4`, recorded in May 2026.
+The source has since been tidied without changing on-screen behaviour.
 
 ## Running it
 

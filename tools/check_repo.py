@@ -205,7 +205,7 @@ def check_trackbars():
 
         for name, (default, maximum) in code.items():
             row = re.search(r"^\|\s*" + re.escape(name) + r"\s*\|([^\n]*)$",
-                            text, re.M | re.I)
+                                                                  text, re.M | re.I)
             if not row:
                 fail(f"{rel(readme)}: slider '{name}' exists in code but is "
                      f"missing from the control table")

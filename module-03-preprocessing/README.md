@@ -49,6 +49,15 @@ slider value is *not* the kernel size — slider 2 is a 5×5 kernel.
 | `ESC` | Leave fullscreen |
 | `r` | Reset all sliders to defaults |
 
+## Panels
+
+| Position | Panel | Shows |
+|---|---|---|
+| Top left | BLURRED (NxN) | Frame after Gaussian blur, kernel size in the label |
+| Top right | RAW MASK | `inRange` output before any morphology |
+| Bottom left | ERODED (Nx) | After erosion, iteration count in the label |
+| Bottom right | CLEANED (Nx dilate) | After dilation — the mask passed downstream |
+
 ## Processing flow
 
 ```
@@ -130,7 +139,7 @@ beside it.
 
 ## Limitations
 
-- HSV bounds are **hardcoded** at line 147 and there is no trackbar for them. A
+- HSV bounds are **hardcoded** in `main()` and there is no trackbar for them. A
   value tuned in module 2 has to be copied into the source by hand.
 - Blur, erode and dilate all use the same square structuring element. Non-square
   or elliptical kernels would suit elongated targets better.
@@ -143,8 +152,8 @@ beside it.
 
 ## Evidence
 
-Stills in `images/` are extracted from `vedios/module_3.mp4`, recorded against the
-current source.
+Stills in `images/` are extracted from `vedios/module_3.mp4`, recorded in May 2026.
+The source has since been tidied without changing on-screen behaviour.
 
 ## Running it
 

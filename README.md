@@ -1,14 +1,23 @@
 # Computer Vision Learning Pipeline
 
-A five-module Python + OpenCV pipeline for LED detection, built from camera
-acquisition through to robot decision logic. Each module is a standalone,
-interactive diagnostic tool with live parameter controls.
+A five-stage Python + OpenCV pipeline for LED detection, from camera acquisition
+through to robot decision logic. Every stage is a separate program with live
+parameter controls, so the effect of each setting can be watched rather than
+guessed at.
 
+Building it that way is what exposed the fault documented below — one the final
+output alone would never have explained.
+
+[![checks](https://github.com/SELVA-31/computer-vision-learning-pipeline/actions/workflows/checks.yml/badge.svg)](https://github.com/SELVA-31/computer-vision-learning-pipeline/actions/workflows/checks.yml)
 ![Python](https://img.shields.io/badge/Python-3.13-blue)
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.10-green)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-Built and tested against an **Arducam IMX298 (B0290)** USB camera on Windows 11.
+Developed against an **Arducam IMX298 (B0290)** USB camera on Windows 11.
+
+<!-- Paste your LinkedIn post link on the line below, then delete this comment.
+**Write-up:** [post title](https://www.linkedin.com/...)
+-->
 
 ![Pipeline overview](assets/diagrams/pipeline.svg)
 
@@ -79,6 +88,33 @@ expands it to fullscreen; clicking again or pressing `ESC` returns to the grid.
 
 ---
 
+## Start here
+
+**1. Point a camera at a coloured LED.** Any USB camera and any bright LED will
+do. A breadboard is not required — a lit indicator on any device works.
+
+**2. Run module 1 first.**
+
+```bash
+python module-01-camera-conditioning/code/module1_hardware_setup.py
+```
+
+**3. If the image looks wrong, that is expected.** The camera settings in the
+source are fixed values tuned for one specific camera. On different hardware the
+picture is often too dark, too bright, or oddly tinted.
+
+Press `+` a few times to raise exposure and see whether it improves. If it does
+not, read [docs/adapting-to-your-camera.md](docs/adapting-to-your-camera.md) —
+it lists the exact lines to change and what each one does.
+
+**4. Then work through modules 2 to 5 in order.** Each one consumes what the
+previous one produces, and each README explains what to look for.
+
+No camera to hand? `python tools/verify_modules.py` exercises the processing
+functions against a synthetic frame.
+
+---
+
 ## Requirements
 
 ```
@@ -89,6 +125,11 @@ numpy 2.5.0
 
 A USB camera on device index 0. All five modules open the camera directly and
 have no headless mode.
+
+> **The camera settings are hardcoded for one specific camera.** Exposure is
+> pinned to `-6.0` and auto white balance is off. Expect to change these for your
+> own hardware — see
+> [docs/adapting-to-your-camera.md](docs/adapting-to-your-camera.md).
 
 ## Setup
 
@@ -138,10 +179,14 @@ module-0N-name/
   images/    stills extracted from the recordings
   video/     short clips (full recordings hosted externally)
   results/   generated output, e.g. module 2's HSV samples
-docs/        parameter reference
+docs/
+  adapting-to-your-camera.md   what to change for different hardware
+  RECOMMENDED_SETTINGS.md      starting slider values per module
 tools/       verification, auditing, frame extraction, clip encoding
 assets/
   diagrams/  hand-authored SVG, not generated imagery
+.github/
+  workflows/checks.yml         runs both check scripts on every push
 ```
 
 Contact sheets used to browse the recordings are generated locally by
@@ -155,6 +200,8 @@ Contact sheets used to browse the recordings are generated locally by
 | `tools/check_repo.py` | Audits the docs against the code: control tables, cited line numbers, image links, file sizes, dependencies |
 | `tools/extract_frames.py` | Contact sheets and full-resolution stills from a recording |
 | `tools/make_clip.py` | Cut a short, repo-sized clip (finds ffmpeg, or uses `imageio-ffmpeg`) |
+
+Both check scripts also run automatically on every push via GitHub Actions.
 | `tools/sample_hsv.py` | Reproduces the HSV measurement behind the main finding |
 
 Run `verify_modules.py` and `check_repo.py` before every commit. Between them they

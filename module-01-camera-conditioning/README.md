@@ -90,6 +90,15 @@ Keyboard:
 
 Mouse: click any panel to expand it; click again to return.
 
+## Panels
+
+| Position | Panel | Shows |
+|---|---|---|
+| Top left | MAIN VIEW | Conditioned frame with FPS, resolution, exposure and slider readout |
+| Top right | HISTOGRAM | Per-channel B/G/R curves beneath the frame |
+| Bottom left | GRID OVERLAY | 100 px grid with pixel labels and a centre crosshair |
+| Bottom right | ZOOM VIEW | Centre crop scaled back to full size |
+
 ## Processing flow
 
 ```

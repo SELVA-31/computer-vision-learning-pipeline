@@ -126,7 +126,7 @@ def create_single_screen(panels: dict, labels: dict, order: list, hint: str,
         cv2.rectangle(resized, (0, 0), (panel_w - 1, panel_h - 1), (100, 100, 100), 2)
         screen[y:y + panel_h, x:x + panel_w] = resized
     cv2.putText(screen, hint, (10, screen_h - 15),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
     return screen
 
 
@@ -211,7 +211,8 @@ def main():
             channels_resized = cv2.resize(channels, (target_w, target_h))
             # Pad or crop to frame height
             if channels_resized.shape[0] < frame.shape[0]:
-                pad = np.zeros((frame.shape[0] - channels_resized.shape[0], target_w, 3), dtype=np.uint8)
+                pad = np.zeros((frame.shape[0] - channels_resized.shape[0], target_w, 3),
+                               dtype=np.uint8)
                 channels_resized = np.vstack([channels_resized, pad])
             else:
                 channels_resized = channels_resized[:frame.shape[0], :]
@@ -228,12 +229,12 @@ def main():
                     fullscreen_mode = True
                     fullscreen_panel = clicked
                 mouse_state['toggle'] = False
-            
+
             # Render
             if fullscreen_mode and fullscreen_panel in panels:
                 fs_img = cv2.resize(panels[fullscreen_panel], (screen_w, screen_h))
-                cv2.putText(fs_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT", 
-                           (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                cv2.putText(fs_img, f"{labels[fullscreen_panel]} - CLICK TO EXIT",
+                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 cv2.imshow("Module 2 - Single Screen", fs_img)
             else:
                 screen = create_single_screen(panels, labels, PANEL_ORDER, HINT,

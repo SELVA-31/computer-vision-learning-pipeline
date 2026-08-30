@@ -189,8 +189,12 @@ buried.
 
 ## Evidence
 
-Stills in `images/` are extracted from `vedios/module_2.mp4`, which was recorded
-against the current source.
+Stills in `images/` are extracted from `vedios/module_2.mp4`, recorded in May 2026.
+
+The source has since been tidied — a crash fix, dead code removed, camera setup
+made identical across modules, and two helper functions parameterised. None of
+that changes what appears on screen, so the recording still shows the behaviour
+the current code produces.
 
 ## Running it
 
